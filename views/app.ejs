@@ -1,1 +1,1059 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NEET Insight — <%= page.charAt(0).toUpperCase() + page.slice(1) %></title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    * { font-family: 'Inter', sans-serif; box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; background: #F4F7FE; color: #1B1C31; }
+    a { text-decoration: none; }
 
+    /* ---------- LAYOUT ---------- */
+    .app-layout { display: flex; min-height: 100vh; }
+    .sidebar {
+      width: 260px;
+      background: #1B1C31;
+      color: #ffffff;
+      padding: 1.5rem 0;
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+      display: flex;
+      flex-direction: column;
+      z-index: 10;
+    }
+    .sidebar-brand {
+      display: flex; align-items: center; gap: 12px;
+      padding: 0 1.5rem 1.75rem;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .sidebar-logo {
+      width: 44px; height: 44px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #FF9C00, #FFC048);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 22px;
+      box-shadow: 0 6px 16px rgba(255, 156, 0, 0.35);
+    }
+    .sidebar-brand-text { font-weight: 800; font-size: 1.05rem; letter-spacing: -0.01em; }
+    .sidebar-brand-sub { font-size: 0.7rem; color: #A3AED0; letter-spacing: 0.04em; text-transform: uppercase; }
+
+    .sidebar-nav { flex: 1; padding: 1.25rem 0.75rem; overflow-y: auto; }
+    .sidebar-nav a {
+      display: flex; align-items: center; gap: 12px;
+      padding: 0.7rem 1rem;
+      color: #A3AED0;
+      border-radius: 10px;
+      font-weight: 500;
+      font-size: 0.92rem;
+      margin-bottom: 4px;
+      transition: all 0.15s ease;
+    }
+    .sidebar-nav a i { font-size: 1.1rem; width: 20px; }
+    .sidebar-nav a:hover { background: rgba(255,255,255,0.05); color: #ffffff; }
+    .sidebar-nav a.active {
+      background: #6366F1;
+      color: #ffffff;
+      box-shadow: 0 6px 18px rgba(99, 102, 241, 0.35);
+    }
+    .sidebar-user {
+      padding: 1rem 1.25rem;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      margin-top: auto;
+    }
+    .sidebar-user-name { font-weight: 600; font-size: 0.9rem; color: #ffffff; }
+    .sidebar-user-role { font-size: 0.75rem; color: #A3AED0; text-transform: capitalize; }
+    .sidebar-user a {
+      display: block; margin-top: 0.75rem;
+      color: #FF6B6B; font-size: 0.85rem; font-weight: 600;
+    }
+    .sidebar-user a:hover { color: #FF4757; }
+
+    .main-content {
+      flex: 1;
+      margin-left: 260px;
+      padding: 1.75rem 2rem 3rem;
+      min-height: 100vh;
+    }
+    .page-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 1.5rem;
+    }
+    .page-title {
+      font-weight: 800;
+      font-size: 1.6rem;
+      letter-spacing: -0.02em;
+      color: #1B1C31;
+      margin: 0;
+    }
+    .page-subtitle { color: #707EAE; font-size: 0.9rem; margin-top: 4px; }
+
+    /* ---------- CARDS / COMPONENTS ---------- */
+    .card-soft {
+      background: #ffffff;
+      border-radius: 16px;
+      border: 1px solid #E2E8F0;
+      box-shadow: 0 2px 8px rgba(20, 25, 70, 0.04);
+    }
+    .card-soft .card-header {
+      background: transparent;
+      border-bottom: 1px solid #E2E8F0;
+      padding: 1.1rem 1.4rem;
+      font-weight: 700;
+      color: #1B1C31;
+      font-size: 0.95rem;
+    }
+    .card-soft .card-body { padding: 1.25rem 1.4rem; }
+
+    .stat-card {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 1.25rem 1.4rem;
+      border: 1px solid #E2E8F0;
+      box-shadow: 0 2px 8px rgba(20, 25, 70, 0.04);
+      display: flex; align-items: center; gap: 14px;
+    }
+    .stat-icon {
+      width: 48px; height: 48px;
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem;
+    }
+    .stat-icon.indigo { background: rgba(99,102,241,0.12); color: #6366F1; }
+    .stat-icon.green { background: rgba(5,205,153,0.12); color: #05CD99; }
+    .stat-icon.orange { background: rgba(255,181,71,0.14); color: #FFB547; }
+    .stat-icon.red { background: rgba(238,93,80,0.12); color: #EE5D50; }
+    .stat-icon.cyan { background: rgba(0,201,167,0.12); color: #01B5A4; }
+    .stat-icon.violet { background: rgba(130,94,255,0.12); color: #825EFF; }
+    .stat-label { font-size: 0.78rem; color: #707EAE; text-transform: uppercase; letter-spacing: 0.04em; font-weight: 600; }
+    .stat-value { font-size: 1.6rem; font-weight: 800; color: #1B1C31; letter-spacing: -0.02em; }
+
+    .btn-primary-custom {
+      background: #6366F1;
+      border: none;
+      color: #ffffff;
+      font-weight: 600;
+      padding: 0.6rem 1.1rem;
+      border-radius: 10px;
+      transition: all 0.15s ease;
+    }
+    .btn-primary-custom:hover { background: #4F46E5; color: #ffffff; }
+    .btn-outline-custom {
+      background: transparent;
+      border: 1.5px solid #E2E8F0;
+      color: #1B1C31;
+      font-weight: 600;
+      padding: 0.55rem 1rem;
+      border-radius: 10px;
+    }
+    .btn-outline-custom:hover { background: #F4F7FE; border-color: #6366F1; color: #6366F1; }
+
+    .form-control, .form-select {
+      border-radius: 10px;
+      border: 1.5px solid #E2E8F0;
+      padding: 0.55rem 0.85rem;
+      font-size: 0.9rem;
+    }
+    .form-control:focus, .form-select:focus {
+      border-color: #6366F1;
+      box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+    }
+    .form-label { font-weight: 600; color: #1B1C31; font-size: 0.82rem; margin-bottom: 0.4rem; }
+
+    .table { color: #1B1C31; margin-bottom: 0; }
+    .table thead th {
+      background: #F4F7FE;
+      color: #707EAE;
+      font-weight: 700;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      border-bottom: 1.5px solid #E2E8F0;
+      padding: 0.85rem 0.9rem;
+    }
+    .table tbody td { padding: 0.8rem 0.9rem; border-bottom: 1px solid #F1F4FB; font-size: 0.9rem; vertical-align: middle; }
+    .table tbody tr:hover { background: #FAFBFE; }
+
+    .badge-soft {
+      display: inline-block;
+      padding: 0.25rem 0.65rem;
+      border-radius: 8px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .badge-green { background: rgba(5,205,153,0.12); color: #04A57F; }
+    .badge-red { background: rgba(238,93,80,0.12); color: #DC4A40; }
+    .badge-gray { background: rgba(160,174,192,0.15); color: #4A5568; }
+    .badge-indigo { background: rgba(99,102,241,0.12); color: #4F46E5; }
+    .badge-orange { background: rgba(255,181,71,0.16); color: #C77C0F; }
+
+    .alert-soft {
+      background: rgba(99, 102, 241, 0.08);
+      color: #4F46E5;
+      border-radius: 12px;
+      padding: 0.75rem 1.1rem;
+      font-size: 0.88rem;
+      border: 1px solid rgba(99, 102, 241, 0.2);
+      margin-bottom: 1.25rem;
+      font-weight: 500;
+    }
+
+    /* ---------- QUESTION ENTRY ---------- */
+    .q-entry-table input, .q-entry-table select {
+      border-radius: 8px;
+      border: 1.5px solid #E2E8F0;
+      padding: 0.4rem 0.6rem;
+      font-size: 0.85rem;
+      width: 100%;
+      background: #ffffff;
+    }
+    .q-entry-table input:focus, .q-entry-table select:focus {
+      border-color: #6366F1;
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+      outline: none;
+    }
+    .q-entry-table th { white-space: nowrap; }
+
+    @media (max-width: 992px) {
+      .sidebar { transform: translateX(-100%); }
+      .main-content { margin-left: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-layout">
+
+    <!-- ========== SIDEBAR ========== -->
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <div class="sidebar-logo">N</div>
+        <div>
+          <div class="sidebar-brand-text">NEET Insight</div>
+          <div class="sidebar-brand-sub">Performance Hub</div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <a href="/app?page=dashboard" class="<%= page==='dashboard'?'active':'' %>">
+          <i class="bi bi-grid-1x2-fill"></i> Dashboard
+        </a>
+        <a href="/app?page=tests" class="<%= page==='tests'?'active':'' %>">
+          <i class="bi bi-clipboard-check-fill"></i> Tests
+        </a>
+        <a href="/app?page=questions" class="<%= page==='questions'?'active':'' %>">
+          <i class="bi bi-pencil-square"></i> Questions
+        </a>
+        <a href="/app?page=analytics" class="<%= page==='analytics'?'active':'' %>">
+          <i class="bi bi-bar-chart-line-fill"></i> Analytics
+        </a>
+        <a href="/app?page=mistakes" class="<%= page==='mistakes'?'active':'' %>">
+          <i class="bi bi-journal-x"></i> Mistakes
+        </a>
+        <a href="/app?page=revision" class="<%= page==='revision'?'active':'' %>">
+          <i class="bi bi-arrow-repeat"></i> Revision
+        </a>
+        <a href="/app?page=progress" class="<%= page==='progress'?'active':'' %>">
+          <i class="bi bi-graph-up-arrow"></i> Progress
+        </a>
+      </nav>
+
+      <div class="sidebar-user">
+        <div class="sidebar-user-name"><%= user.full_name || user.email %></div>
+        <div class="sidebar-user-role"><%= user.role %></div>
+        <a href="/logout"><i class="bi bi-box-arrow-right"></i> Logout</a>
+      </div>
+    </aside>
+
+    <!-- ========== MAIN CONTENT ========== -->
+    <main class="main-content">
+
+      <% if (msg) { %><div class="alert-soft"><i class="bi bi-info-circle me-2"></i><%= msg %></div><% } %>
+
+      <!-- ============== DASHBOARD ============== -->
+      <% if (page === 'dashboard') {
+        var totalTests = tests.length;
+        var totalQ = questions.length;
+        var correctQ = questions.filter(function(q){ return q.status==='Correct'; }).length;
+        var wrongQ = questions.filter(function(q){ return q.status==='Wrong'; }).length;
+        var skippedQ = questions.filter(function(q){ return q.status==='Skipped'; }).length;
+        var attempted = correctQ + wrongQ;
+        var accuracy = attempted>0 ? (correctQ/attempted*100) : 0;
+        var negMarks = wrongQ * 1;
+        var oppLoss = wrongQ * 5;
+        var predScore = correctQ*4 - wrongQ*1;
+      %>
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Dashboard</h1>
+            <div class="page-subtitle">Your overall performance at a glance</div>
+          </div>
+        </div>
+
+        <div class="row g-3 mb-3">
+          <div class="col-md-4 col-xl-2"><div class="stat-card"><div class="stat-icon indigo"><i class="bi bi-clipboard-data"></i></div><div><div class="stat-label">Total Tests</div><div class="stat-value"><%= totalTests %></div></div></div></div>
+          <div class="col-md-4 col-xl-2"><div class="stat-card"><div class="stat-icon cyan"><i class="bi bi-list-ol"></i></div><div><div class="stat-label">Total Questions</div><div class="stat-value"><%= totalQ %></div></div></div></div>
+          <div class="col-md-4 col-xl-2"><div class="stat-card"><div class="stat-icon green"><i class="bi bi-bullseye"></i></div><div><div class="stat-label">Accuracy</div><div class="stat-value"><%= accuracy.toFixed(1) %>%</div></div></div></div>
+          <div class="col-md-4 col-xl-2"><div class="stat-card"><div class="stat-icon red"><i class="bi bi-dash-circle"></i></div><div><div class="stat-label">Negative Marks</div><div class="stat-value"><%= negMarks %></div></div></div></div>
+          <div class="col-md-4 col-xl-2"><div class="stat-card"><div class="stat-icon orange"><i class="bi bi-graph-down"></i></div><div><div class="stat-label">Opportunity Loss</div><div class="stat-value"><%= oppLoss %></div></div></div></div>
+          <div class="col-md-4 col-xl-2"><div class="stat-card"><div class="stat-icon violet"><i class="bi bi-trophy-fill"></i></div><div><div class="stat-label">Predicted Score</div><div class="stat-value"><%= predScore %></div></div></div></div>
+        </div>
+
+        <div class="row g-3">
+          <div class="col-lg-8">
+            <div class="card-soft">
+              <div class="card-header"><i class="bi bi-graph-up me-2 text-primary"></i>Accuracy Trend (last 30 saves)</div>
+              <div class="card-body"><canvas id="accuracyTrendChart" height="110"></canvas></div>
+            </div>
+          </div>
+          <div class="col-lg-4">
+            <div class="card-soft">
+              <div class="card-header"><i class="bi bi-pie-chart me-2 text-primary"></i>Mistake Distribution</div>
+              <div class="card-body"><canvas id="mistakeDistChart" height="200"></canvas></div>
+            </div>
+          </div>
+          <div class="col-lg-12">
+            <div class="card-soft">
+              <div class="card-header"><i class="bi bi-bar-chart me-2 text-primary"></i>Subject Performance</div>
+              <div class="card-body"><canvas id="subjectPerfChart" height="80"></canvas></div>
+            </div>
+          </div>
+        </div>
+
+        <script>
+        (function(){
+          var questions = <%- JSON.stringify(questions||[]) %>;
+          var progress  = <%- JSON.stringify(progress||[]) %>;
+          var mistakes  = <%- JSON.stringify(mistakes||[]) %>;
+
+          // Accuracy trend over saved progress
+          var pOrdered = progress.slice().reverse();
+          var pLabels = pOrdered.map(function(p,i){ return 'T' + (i+1); });
+          var pData   = pOrdered.map(function(p){ return (p.metrics_json && p.metrics_json.accuracy) || 0; });
+          new Chart(document.getElementById('accuracyTrendChart'), {
+            type: 'line',
+            data: { labels: pLabels, datasets: [{
+              label: 'Accuracy %', data: pData,
+              borderColor: '#6366F1', backgroundColor: 'rgba(99,102,241,0.15)',
+              tension: 0.35, fill: true, pointRadius: 4, pointBackgroundColor: '#6366F1'
+            }]},
+            options: { responsive: true, plugins: { legend: { display: false } },
+              scales: { y: { beginAtZero: true, max: 100, ticks: { callback: function(v){return v+'%'} } } } }
+          });
+
+          // Subject performance
+          var subjects = ['Physics','Chemistry','Biology'];
+          var subjectAcc = subjects.map(function(sub){
+            var qs = questions.filter(function(q){ return q.subject===sub; });
+            var c = qs.filter(function(q){ return q.status==='Correct'; }).length;
+            var w = qs.filter(function(q){ return q.status==='Wrong'; }).length;
+            return (c+w)>0 ? (c/(c+w)*100) : 0;
+          });
+          new Chart(document.getElementById('subjectPerfChart'), {
+            type: 'bar',
+            data: { labels: subjects, datasets: [{
+              label: 'Accuracy %', data: subjectAcc,
+              backgroundColor: ['#6366F1','#05CD99','#FFB547'],
+              borderRadius: 8
+            }]},
+            options: { responsive: true, plugins: { legend: { display: false } },
+              scales: { y: { beginAtZero: true, max: 100, ticks: { callback: function(v){return v+'%'} } } } }
+          });
+
+          // Mistake distribution
+          var mistakeMap = {};
+          questions.filter(function(q){ return q.status==='Wrong' && q.mistake_type; }).forEach(function(q){
+            mistakeMap[q.mistake_type] = (mistakeMap[q.mistake_type]||0) + 1;
+          });
+          var mLabels = Object.keys(mistakeMap);
+          var mData   = Object.values(mistakeMap);
+          if (mLabels.length === 0) { mLabels = ['No data']; mData = [1]; }
+          new Chart(document.getElementById('mistakeDistChart'), {
+            type: 'doughnut',
+            data: { labels: mLabels, datasets: [{
+              data: mData,
+              backgroundColor: ['#EE5D50','#FFB547','#6366F1','#05CD99','#825EFF','#01B5A4','#FF9C00']
+            }]},
+            options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } } } }
+          });
+        })();
+        </script>
+
+      <!-- ============== TESTS ============== -->
+      <% } else if (page === 'tests') { %>
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Tests</h1>
+            <div class="page-subtitle">Create and manage your test attempts</div>
+          </div>
+        </div>
+
+        <div class="row g-3">
+          <div class="col-lg-4">
+            <div class="card-soft">
+              <div class="card-header"><i class="bi bi-plus-square me-2 text-primary"></i>Create New Test</div>
+              <div class="card-body">
+                <form method="POST" action="/app">
+                  <input type="hidden" name="page" value="tests" />
+                  <input type="hidden" name="action" value="create_test" />
+                  <div class="mb-2"><label class="form-label">Test Name</label><input type="text" name="test_name" class="form-control" required /></div>
+                  <div class="row g-2 mb-2">
+                    <div class="col-6"><label class="form-label">Date</label><input type="date" name="date" class="form-control" /></div>
+                    <div class="col-6"><label class="form-label">Type</label>
+                      <select name="type" class="form-select">
+                        <option>Mock Test</option><option>Previous Year</option><option>Practice</option><option>Sectional</option><option>Grand Test</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="row g-2 mb-3">
+                    <div class="col-6"><label class="form-label">Duration (min)</label><input type="number" name="duration" class="form-control" value="180" /></div>
+                    <div class="col-6"><label class="form-label">Total Questions</label><input type="number" name="total_questions" class="form-control" value="200" /></div>
+                  </div>
+                  <div class="mb-3"><label class="form-label">Source</label><input type="text" name="source" class="form-control" placeholder="e.g. Allen, Aakash, NTA" /></div>
+                  <button type="submit" class="btn-primary-custom w-100"><i class="bi bi-plus-lg me-1"></i> Create Test</button>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-8">
+            <div class="card-soft">
+              <div class="card-header"><i class="bi bi-list-ul me-2 text-primary"></i>All Tests</div>
+              <div class="card-body p-0">
+                <div class="table-responsive">
+                  <table class="table">
+                    <thead><tr><th>Name</th><th>Date</th><th>Type</th><th>Duration</th><th>Q's</th><th>Action</th></tr></thead>
+                    <tbody>
+                      <% if (tests.length === 0) { %>
+                        <tr><td colspan="6" class="text-center py-4 text-muted">No tests yet. Create one to start.</td></tr>
+                      <% } %>
+                      <% tests.forEach(function(t){ %>
+                        <tr>
+                          <td><a href="/app?page=test_detail&id=<%= t._id %>" class="fw-semibold text-dark"><%= t.test_name %></a><div class="text-muted small"><%= t.source||'' %></div></td>
+                          <td><%= new Date(t.date).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) %></td>
+                          <td><span class="badge-soft badge-indigo"><%= t.type %></span></td>
+                          <td><%= t.duration %> min</td>
+                          <td><%= t.total_questions %></td>
+                          <td>
+                            <a href="/app?page=test_detail&id=<%= t._id %>" class="btn-outline-custom btn-sm">View</a>
+                            <form method="POST" action="/app" style="display:inline" onsubmit="return confirm('Delete this test and all its questions?')">
+                              <input type="hidden" name="action" value="delete_test" />
+                              <input type="hidden" name="test_id" value="<%= t._id %>" />
+                              <button class="btn btn-sm btn-outline-danger ms-1"><i class="bi bi-trash"></i></button>
+                            </form>
+                          </td>
+                        </tr>
+                      <% }); %>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      <!-- ============== TEST DETAIL ============== -->
+      <% } else if (page === 'test_detail') { %>
+        <div class="page-header">
+          <div>
+            <h1 class="page-title"><%= current_test ? current_test.test_name : 'Test Detail' %></h1>
+            <div class="page-subtitle">
+              <% if (current_test) { %>
+                <%= new Date(current_test.date).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) %>
+                · <%= current_test.type %> · <%= current_test.duration %> min · <%= current_test.total_questions %> questions
+              <% } %>
+            </div>
+          </div>
+          <a href="/app?page=questions&test_id=<%= current_test ? current_test._id : '' %>" class="btn-primary-custom"><i class="bi bi-pencil-square me-1"></i> Add / Edit Questions</a>
+        </div>
+
+        <% if (!current_test) { %>
+          <div class="alert-soft">Test not found.</div>
+        <% } else {
+          var tCorrect = questions.filter(function(q){return q.status==='Correct';}).length;
+          var tWrong   = questions.filter(function(q){return q.status==='Wrong';}).length;
+          var tSkip    = questions.filter(function(q){return q.status==='Skipped';}).length;
+          var tAttempt = tCorrect + tWrong;
+          var tAcc     = tAttempt>0 ? (tCorrect/tAttempt*100) : 0;
+          var tScore   = tCorrect*4 - tWrong*1;
+          var subjects = ['Physics','Chemistry','Biology'];
+        %>
+
+        <div class="row g-3 mb-3">
+          <div class="col-md-3"><div class="stat-card"><div class="stat-icon green"><i class="bi bi-check-circle"></i></div><div><div class="stat-label">Correct</div><div class="stat-value"><%= tCorrect %></div></div></div></div>
+          <div class="col-md-3"><div class="stat-card"><div class="stat-icon red"><i class="bi bi-x-circle"></i></div><div><div class="stat-label">Wrong</div><div class="stat-value"><%= tWrong %></div></div></div></div>
+          <div class="col-md-3"><div class="stat-card"><div class="stat-icon indigo"><i class="bi bi-bullseye"></i></div><div><div class="stat-label">Accuracy</div><div class="stat-value"><%= tAcc.toFixed(1) %>%</div></div></div></div>
+          <div class="col-md-3"><div class="stat-card"><div class="stat-icon violet"><i class="bi bi-trophy"></i></div><div><div class="stat-label">Score</div><div class="stat-value"><%= tScore %></div></div></div></div>
+        </div>
+
+        <div class="row g-3 mb-3">
+          <% subjects.forEach(function(sub){
+            var qs = questions.filter(function(q){return q.subject===sub;});
+            var c = qs.filter(function(q){return q.status==='Correct';}).length;
+            var w = qs.filter(function(q){return q.status==='Wrong';}).length;
+            var sk = qs.filter(function(q){return q.status==='Skipped';}).length;
+            var acc = (c+w)>0 ? (c/(c+w)*100) : 0;
+          %>
+            <div class="col-md-4">
+              <div class="card-soft">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <h6 class="fw-bold mb-0"><%= sub %></h6>
+                    <span class="badge-soft badge-indigo"><%= qs.length %> Q's</span>
+                  </div>
+                  <div class="mt-2 small text-muted">C: <b class="text-success"><%= c %></b> · W: <b class="text-danger"><%= w %></b> · Sk: <b><%= sk %></b></div>
+                  <div class="progress mt-2" style="height:8px;border-radius:6px;">
+                    <div class="progress-bar" style="width:<%= acc %>%;background:#6366F1;"></div>
+                  </div>
+                  <div class="small mt-1 fw-semibold"><%= acc.toFixed(1) %>% accuracy</div>
+                </div>
+              </div>
+            </div>
+          <% }); %>
+        </div>
+
+        <div class="card-soft">
+          <div class="card-header"><i class="bi bi-list-task me-2 text-primary"></i>Question Breakdown</div>
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="table">
+                <thead><tr><th>Q.No</th><th>Subject</th><th>Chapter</th><th>Topic</th><th>Difficulty</th><th>Correct</th><th>Your</th><th>Status</th><th>Time</th></tr></thead>
+                <tbody>
+                  <% if (questions.length === 0) { %>
+                    <tr><td colspan="9" class="text-center py-4 text-muted">No questions added yet.</td></tr>
+                  <% } %>
+                  <% questions.forEach(function(q){ %>
+                    <tr>
+                      <td class="fw-semibold">Q<%= q.question_no %></td>
+                      <td><%= q.subject||'-' %></td>
+                      <td><%= q.chapter||'-' %></td>
+                      <td><%= q.topic||'-' %></td>
+                      <td><%= q.difficulty||'-' %></td>
+                      <td><%= q.correct_answer||'-' %></td>
+                      <td><%= q.student_answer||'-' %></td>
+                      <td>
+                        <% if (q.status==='Correct') { %><span class="badge-soft badge-green">Correct</span>
+                        <% } else if (q.status==='Wrong') { %><span class="badge-soft badge-red">Wrong</span>
+                        <% } else { %><span class="badge-soft badge-gray">Skipped</span><% } %>
+                      </td>
+                      <td><%= q.time_taken %>s</td>
+                    </tr>
+                  <% }); %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <% } %>
+
+      <!-- ============== QUESTIONS (BULK ENTRY) ============== -->
+      <% } else if (page === 'questions') { %>
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Question Entry</h1>
+            <div class="page-subtitle">Bulk entry with auto-fill & keyboard navigation</div>
+          </div>
+        </div>
+
+        <div class="card-soft mb-3">
+          <div class="card-body">
+            <form id="qEntryForm" method="POST" action="/app">
+              <input type="hidden" name="page" value="questions" />
+              <input type="hidden" name="action" value="save_questions" />
+              <input type="hidden" name="test_id" value="<%= current_test ? current_test._id : (tests[0] ? tests[0]._id : '') %>" />
+
+              <div class="row g-2 mb-3">
+                <div class="col-md-6">
+                  <label class="form-label">Select Test</label>
+                  <select name="test_select" id="testSelect" class="form-select" onchange="window.location.href='/app?page=questions&test_id='+this.value">
+                    <% tests.forEach(function(t){ %>
+                      <option value="<%= t._id %>" <%= (current_test && current_test._id.toString()===t._id.toString()) ? 'selected' : '' %>><%= t.test_name %></option>
+                    <% }); %>
+                    <% if (tests.length===0) { %><option value="">No tests available — create one first</option><% } %>
+                  </select>
+                </div>
+                <div class="col-md-6 d-flex align-items-end">
+                  <% if (current_test) { %>
+                    <span class="text-muted">Adding to: <b class="text-dark"><%= current_test.test_name %></b></span>
+                  <% } %>
+                </div>
+              </div>
+
+              <div class="table-responsive">
+                <table class="table q-entry-table align-middle">
+                  <thead>
+                    <tr>
+                      <th>Q.No</th><th>Subject</th><th>Chapter</th><th>Topic</th><th>Diff.</th>
+                      <th>Correct</th><th>Your</th><th>Status</th>
+                      <th>Conf.</th><th>Time(s)</th><th>Mistake</th>
+                    </tr>
+                  </thead>
+                  <tbody id="qRows"></tbody>
+                </table>
+              </div>
+
+              <div class="d-flex gap-2 mt-3">
+                <button type="button" class="btn-outline-custom" onclick="addRow()"><i class="bi bi-plus-lg me-1"></i>Add Row</button>
+                <button type="button" class="btn-primary-custom" onclick="saveQuestions()"><i class="bi bi-save me-1"></i>Save All</button>
+                <span class="ms-auto small text-muted align-self-center">Press <kbd>Tab</kbd> to navigate · <kbd>Enter</kbd> on last field adds a new row</span>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <script>
+        var rowIdx = 0;
+        var subjects = ['Physics','Chemistry','Biology'];
+        var difficulties = ['Easy','Medium','Hard'];
+        var statuses = ['Correct','Wrong','Skipped'];
+        var confidences = ['High','Medium','Low'];
+        var mistakes = ['None','Conceptual Gap','Silly Mistake','Time Pressure','Guess','Calculation Error','Misread Question'];
+
+        function makeSelect(options, name, val) {
+          var html = '<select name="'+name+'">';
+          options.forEach(function(o){ html += '<option'+(o===val?' selected':'')+'>'+o+'</option>'; });
+          html += '</select>';
+          return html;
+        }
+
+        function rowHtml(idx, defaults) {
+          defaults = defaults || {};
+          return '<tr data-idx="'+idx+'">'+
+            '<td><input type="number" name="q_no" value="'+(defaults.q_no||'')+'" /></td>'+
+            '<td>'+makeSelect(subjects,'subject',defaults.subject||'Physics')+'</td>'+
+            '<td><input type="text" name="chapter" value="'+ (defaults.chapter||'') +'" /></td>'+
+            '<td><input type="text" name="topic" value="'+(defaults.topic||'')+'" /></td>'+
+            '<td>'+makeSelect(difficulties,'difficulty',defaults.difficulty||'Medium')+'</td>'+
+            '<td><input type="text" name="correct_answer" style="width:60px" value="'+(defaults.correct_answer||'')+'" /></td>'+
+            '<td><input type="text" name="student_answer" style="width:60px" value="'+(defaults.student_answer||'')+'" /></td>'+
+            '<td>'+makeSelect(statuses,'status',defaults.status||'Skipped')+'</td>'+
+            '<td>'+makeSelect(confidences,'confidence',defaults.confidence||'Medium')+'</td>'+
+            '<td><input type="number" name="time_taken" value="'+(defaults.time_taken||'')+'" /></td>'+
+            '<td>'+makeSelect(mistakes,'mistake_type',defaults.mistake_type||'None')+'</td>'+
+          '</tr>';
+        }
+
+        function getDefaultsFromLastRow() {
+          var rows = document.querySelectorAll('#qRows tr');
+          if (rows.length === 0) return null;
+          var last = rows[rows.length-1];
+          var inputs = last.querySelectorAll('input,select');
+          var d = {};
+          inputs.forEach(function(el){
+            var n = el.name;
+            if (n) d[n] = el.value;
+          });
+          // Don't carry q_no forward
+          delete d.q_no;
+          return d;
+        }
+
+        function addRow() {
+          var defaults = getDefaultsFromLastRow();
+          var container = document.getElementById('qRows');
+          container.insertAdjacentHTML('beforeend', rowHtml(rowIdx++, defaults));
+        }
+
+        function saveQuestions() {
+          var rows = document.querySelectorAll('#qRows tr');
+          var data = [];
+          rows.forEach(function(r){
+            var obj = {};
+            r.querySelectorAll('input,select').forEach(function(el){
+              obj[el.name] = el.value;
+            });
+            if (obj.q_no) data.push(obj);
+          });
+          if (data.length === 0) { alert('Please enter at least one question.'); return; }
+          // Inject hidden JSON
+          var form = document.getElementById('qEntryForm');
+          var existing = form.querySelector('input[name="questions_json"]');
+          if (existing) existing.remove();
+          var hidden = document.createElement('input');
+          hidden.type = 'hidden';
+          hidden.name = 'questions_json';
+          hidden.value = JSON.stringify(data);
+          form.appendChild(hidden);
+          form.submit();
+        }
+
+        // Auto-row on Enter at last field, with Tab navigation
+        document.addEventListener('keydown', function(e){
+          if (e.key !== 'Enter') return;
+          var tag = (e.target.tagName||'').toLowerCase();
+          if (tag !== 'input' && tag !== 'select') return;
+          var tr = e.target.closest('tr');
+          if (!tr) return;
+          var inputs = Array.from(tr.querySelectorAll('input,select'));
+          var i = inputs.indexOf(e.target);
+          if (i === inputs.length - 1) {
+            e.preventDefault();
+            addRow();
+            setTimeout(function(){
+              var newRows = document.querySelectorAll('#qRows tr');
+              var last = newRows[newRows.length-1];
+              if (last) last.querySelector('input,select').focus();
+            }, 10);
+          }
+        });
+
+        // Seed 5 rows
+        for (var i = 0; i < 5; i++) addRow();
+        </script>
+
+      <!-- ============== ANALYTICS ============== -->
+      <% } else if (page === 'analytics') {
+        var subjects = ['Physics','Chemistry','Biology'];
+        function subjectStats(sub){
+          var qs = questions.filter(function(q){return q.subject===sub;});
+          var c = qs.filter(function(q){return q.status==='Correct';}).length;
+          var w = qs.filter(function(q){return q.status==='Wrong';}).length;
+          var sk = qs.filter(function(q){return q.status==='Skipped';}).length;
+          var acc = (c+w)>0 ? (c/(c+w)*100) : 0;
+          return { total: qs.length, correct: c, wrong: w, skipped: sk, accuracy: acc };
+        }
+        function chapterStats(){
+          var map = {};
+          questions.forEach(function(q){
+            if (!q.chapter) return;
+            var k = q.subject+'||'+q.chapter;
+            if (!map[k]) map[k] = { subject: q.subject, chapter: q.chapter, c:0, w:0 };
+            if (q.status==='Correct') map[k].c++;
+            else if (q.status==='Wrong') map[k].w++;
+          });
+          return Object.values(map).map(function(m){
+            var acc = (m.c+m.w)>0 ? (m.c/(m.c+m.w)*100) : 0;
+            return Object.assign(m, { accuracy: acc, attempted: m.c+m.w });
+          }).sort(function(a,b){ return b.attempted - a.attempted; });
+        }
+        function topicStats(){
+          var map = {};
+          questions.forEach(function(q){
+            if (!q.topic) return;
+            var k = q.subject+'||'+q.chapter+'||'+q.topic;
+            if (!map[k]) map[k] = { subject: q.subject, chapter: q.chapter, topic: q.topic, c:0, w:0 };
+            if (q.status==='Correct') map[k].c++;
+            else if (q.status==='Wrong') map[k].w++;
+          });
+          return Object.values(map).map(function(m){
+            var acc = (m.c+m.w)>0 ? (m.c/(m.c+m.w)*100) : 0;
+            return Object.assign(m, { accuracy: acc, attempted: m.c+m.w });
+          }).sort(function(a,b){ return b.attempted - a.attempted; });
+        }
+        var chapters = chapterStats();
+        var topics = topicStats();
+      %>
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Analytics</h1>
+            <div class="page-subtitle">Deep dive into subject, chapter, and topic performance</div>
+          </div>
+        </div>
+
+        <div class="row g-3 mb-3">
+          <% subjects.forEach(function(sub){ var s = subjectStats(sub); %>
+            <div class="col-md-4">
+              <div class="card-soft">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h6 class="fw-bold mb-0"><%= sub %></h6>
+                    <span class="badge-soft badge-indigo"><%= s.total %> Q's</span>
+                  </div>
+                  <div class="stat-value mb-2"><%= s.accuracy.toFixed(1) %>%</div>
+                  <div class="small text-muted">C: <b class="text-success"><%= s.correct %></b> · W: <b class="text-danger"><%= s.wrong %></b> · Sk: <%= s.skipped %></div>
+                  <div class="progress mt-2" style="height:6px;border-radius:6px;"><div class="progress-bar" style="width:<%= s.accuracy %>%;background:#6366F1;"></div></div>
+                </div>
+              </div>
+            </div>
+          <% }); %>
+        </div>
+
+        <div class="row g-3">
+          <div class="col-lg-6">
+            <div class="card-soft">
+              <div class="card-header"><i class="bi bi-book me-2 text-primary"></i>Chapter-wise Performance</div>
+              <div class="card-body p-0">
+                <div class="table-responsive" style="max-height:400px;overflow-y:auto;">
+                  <table class="table">
+                    <thead><tr><th>Subject</th><th>Chapter</th><th>Attempted</th><th>Accuracy</th></tr></thead>
+                    <tbody>
+                      <% if (chapters.length===0) { %><tr><td colspan="4" class="text-center text-muted py-3">No data yet</td></tr><% } %>
+                      <% chapters.slice(0,20).forEach(function(c){ %>
+                        <tr>
+                          <td><span class="badge-soft badge-indigo"><%= c.subject||'-' %></span></td>
+                          <td><%= c.chapter %></td>
+                          <td><%= c.attempted %></td>
+                          <td>
+                            <div class="d-flex align-items-center gap-2">
+                              <div class="progress flex-grow-1" style="height:6px;"><div class="progress-bar" style="width:<%= c.accuracy %>%;background:<%= c.accuracy>=70?'#05CD99':(c.accuracy>=40?'#FFB547':'#EE5D50') %>;"></div></div>
+                              <span class="small fw-semibold" style="min-width:48px;"><%= c.accuracy.toFixed(0) %>%</span>
+                            </div>
+                          </td>
+                        </tr>
+                      <% }); %>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-6">
+            <div class="card-soft">
+              <div class="card-header"><i class="bi bi-tags me-2 text-primary"></i>Topic-wise Performance</div>
+              <div class="card-body p-0">
+                <div class="table-responsive" style="max-height:400px;overflow-y:auto;">
+                  <table class="table">
+                    <thead><tr><th>Subject</th><th>Chapter</th><th>Topic</th><th>Acc.</th></tr></thead>
+                    <tbody>
+                      <% if (topics.length===0) { %><tr><td colspan="4" class="text-center text-muted py-3">No data yet</td></tr><% } %>
+                      <% topics.slice(0,20).forEach(function(t){ %>
+                        <tr>
+                          <td><span class="badge-soft badge-indigo"><%= t.subject||'-' %></span></td>
+                          <td><%= t.chapter||'-' %></td>
+                          <td><%= t.topic %></td>
+                          <td><span class="badge-soft <%= t.accuracy>=70?'badge-green':(t.accuracy>=40?'badge-orange':'badge-red') %>"><%= t.accuracy.toFixed(0) %>%</span></td>
+                        </tr>
+                      <% }); %>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      <!-- ============== MISTAKES ============== -->
+      <% } else if (page === 'mistakes') { %>
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Mistake Notebook</h1>
+            <div class="page-subtitle">Auto-generated from wrong answers. Track your revision progress.</div>
+          </div>
+        </div>
+
+        <div class="card-soft">
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="table">
+                <thead><tr><th>Date</th><th>Subject</th><th>Chapter</th><th>Topic</th><th>Mistake Type</th><th>Correct Concept</th><th>Status</th><th>Next Revision</th><th>Update</th></tr></thead>
+                <tbody>
+                  <% if (mistakes.length === 0) { %>
+                    <tr><td colspan="9" class="text-center py-4 text-muted">No mistakes recorded yet. Solve a test to start.</td></tr>
+                  <% } %>
+                  <% mistakes.forEach(function(m){ %>
+                    <tr>
+                      <td class="small"><%= new Date(m.date||m.created_at).toLocaleDateString('en-IN',{day:'2-digit',month:'short'}) %></td>
+                      <td><span class="badge-soft badge-indigo"><%= m.subject||'-' %></span></td>
+                      <td><%= m.chapter||'-' %></td>
+                      <td><%= m.topic||'-' %></td>
+                      <td><span class="badge-soft badge-orange"><%= m.mistake_type||'-' %></span></td>
+                      <td class="small"><%= m.correct_concept||'-' %></td>
+                      <td>
+                        <% if (m.revision_status==='completed') { %><span class="badge-soft badge-green">Done</span>
+                        <% } else if (m.revision_status==='in-progress') { %><span class="badge-soft badge-orange">In Progress</span>
+                        <% } else { %><span class="badge-soft badge-red">Pending</span><% } %>
+                      </td>
+                      <td class="small"><%= m.next_revision_date ? new Date(m.next_revision_date).toLocaleDateString('en-IN',{day:'2-digit',month:'short'}) : '-' %></td>
+                      <td>
+                        <form method="POST" action="/app" class="d-flex gap-1">
+                          <input type="hidden" name="action" value="update_mistake" />
+                          <input type="hidden" name="page" value="mistakes" />
+                          <input type="hidden" name="mistake_id" value="<%= m._id %>" />
+                          <select name="revision_status" class="form-select form-select-sm" style="width:auto;">
+                            <option value="pending" <%= m.revision_status==='pending'?'selected':'' %>>Pending</option>
+                            <option value="in-progress" <%= m.revision_status==='in-progress'?'selected':'' %>>In Progress</option>
+                            <option value="completed" <%= m.revision_status==='completed'?'selected':'' %>>Completed</option>
+                          </select>
+                          <button class="btn btn-sm btn-primary-custom"><i class="bi bi-check2"></i></button>
+                        </form>
+                      </td>
+                    </tr>
+                  <% }); %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      <!-- ============== REVISION ============== -->
+      <% } else if (page === 'revision') { %>
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Revision Engine</h1>
+            <div class="page-subtitle">Spaced repetition: Day 1 → 3 → 7 → 15 → 30 → 60</div>
+          </div>
+        </div>
+
+        <div class="row g-3">
+          <div class="col-lg-4">
+            <div class="card-soft">
+              <div class="card-header bg-danger-subtle" style="background:rgba(238,93,80,0.08);color:#B53434;">
+                <i class="bi bi-exclamation-circle me-2"></i>Due Today (<%= due_today.length %>)
+              </div>
+              <div class="card-body p-0">
+                <div class="table-responsive" style="max-height:500px;overflow-y:auto;">
+                  <table class="table">
+                    <thead><tr><th>Q</th><th>Subject</th><th>Chapter</th><th>Day</th><th>Action</th></tr></thead>
+                    <tbody>
+                      <% if (due_today.length===0) { %><tr><td colspan="5" class="text-center text-muted py-3">Nothing due today 🎉</td></tr><% } %>
+                      <% due_today.forEach(function(r){ var q = r.question_id||{}; %>
+                        <tr>
+                          <td class="small">Q<%= q.question_no||'?' %></td>
+                          <td><span class="badge-soft badge-indigo"><%= q.subject||'-' %></span></td>
+                          <td class="small"><%= q.chapter||'-' %></td>
+                          <td><span class="badge-soft badge-orange">D<%= r.revision_interval %></span></td>
+                          <td>
+                            <form method="POST" action="/app">
+                              <input type="hidden" name="action" value="mark_revision_done" />
+                              <input type="hidden" name="page" value="revision" />
+                              <input type="hidden" name="revision_id" value="<%= r._id %>" />
+                              <button class="btn btn-sm btn-primary-custom"><i class="bi bi-check"></i></button>
+                            </form>
+                          </td>
+                        </tr>
+                      <% }); %>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-4">
+            <div class="card-soft">
+              <div class="card-header" style="background:rgba(255,181,71,0.08);color:#C77C0F;">
+                <i class="bi bi-calendar-event me-2"></i>Upcoming (<%= upcoming.length %>)
+              </div>
+              <div class="card-body p-0">
+                <div class="table-responsive" style="max-height:500px;overflow-y:auto;">
+                  <table class="table">
+                    <thead><tr><th>Q</th><th>Subject</th><th>Due</th><th>Day</th></tr></thead>
+                    <tbody>
+                      <% if (upcoming.length===0) { %><tr><td colspan="4" class="text-center text-muted py-3">No upcoming revisions</td></tr><% } %>
+                      <% upcoming.forEach(function(r){ var q = r.question_id||{}; %>
+                        <tr>
+                          <td class="small">Q<%= q.question_no||'?' %></td>
+                          <td><span class="badge-soft badge-indigo"><%= q.subject||'-' %></span></td>
+                          <td class="small"><%= new Date(r.due_date).toLocaleDateString('en-IN',{day:'2-digit',month:'short'}) %></td>
+                          <td><span class="badge-soft badge-orange">D<%= r.revision_interval %></span></td>
+                        </tr>
+                      <% }); %>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-4">
+            <div class="card-soft">
+              <div class="card-header" style="background:rgba(5,205,153,0.08);color:#04A57F;">
+                <i class="bi bi-check2-circle me-2"></i>Completed (<%= completed.length %>)
+              </div>
+              <div class="card-body p-0">
+                <div class="table-responsive" style="max-height:500px;overflow-y:auto;">
+                  <table class="table">
+                    <thead><tr><th>Q</th><th>Subject</th><th>Chapter</th><th>Done On</th></tr></thead>
+                    <tbody>
+                      <% if (completed.length===0) { %><tr><td colspan="4" class="text-center text-muted py-3">No completed revisions yet</td></tr><% } %>
+                      <% completed.forEach(function(r){ var q = r.question_id||{}; %>
+                        <tr>
+                          <td class="small">Q<%= q.question_no||'?' %></td>
+                          <td><span class="badge-soft badge-indigo"><%= q.subject||'-' %></span></td>
+                          <td class="small"><%= q.chapter||'-' %></td>
+                          <td class="small"><%= new Date(r.due_date).toLocaleDateString('en-IN',{day:'2-digit',month:'short'}) %></td>
+                        </tr>
+                      <% }); %>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      <!-- ============== PROGRESS ============== -->
+      <% } else if (page === 'progress') {
+        var all = progress || [];
+        var last7 = all.slice(-7);
+        var last30 = all.slice(-30);
+        function avg(arr, key){ if(!arr.length) return 0; var s = 0; arr.forEach(function(p){ s += ((p.metrics_json&&p.metrics_json[key])||0); }); return s/arr.length; }
+        var weekAcc = avg(last7,'accuracy');
+        var monthAcc = avg(last30,'accuracy');
+        var weekScore = avg(last7,'predicted_score');
+        var monthScore = avg(last30,'predicted_score');
+      %>
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Progress Trends</h1>
+            <div class="page-subtitle">Track your weekly and monthly improvements</div>
+          </div>
+        </div>
+
+        <div class="row g-3 mb-3">
+          <div class="col-md-3"><div class="stat-card"><div class="stat-icon green"><i class="bi bi-calendar-week"></i></div><div><div class="stat-label">Weekly Accuracy</div><div class="stat-value"><%= weekAcc.toFixed(1) %>%</div></div></div></div>
+          <div class="col-md-3"><div class="stat-card"><div class="stat-icon cyan"><i class="bi bi-calendar3"></i></div><div><div class="stat-label">Monthly Accuracy</div><div class="stat-value"><%= monthAcc.toFixed(1) %>%</div></div></div></div>
+          <div class="col-md-3"><div class="stat-card"><div class="stat-icon indigo"><i class="bi bi-graph-up"></i></div><div><div class="stat-label">Weekly Avg Score</div><div class="stat-value"><%= weekScore.toFixed(0) %></div></div></div></div>
+          <div class="col-md-3"><div class="stat-card"><div class="stat-icon violet"><i class="bi bi-trophy"></i></div><div><div class="stat-label">Monthly Avg Score</div><div class="stat-value"><%= monthScore.toFixed(0) %></div></div></div></div>
+        </div>
+
+        <div class="row g-3">
+          <div class="col-lg-6">
+            <div class="card-soft">
+              <div class="card-header"><i class="bi bi-graph-up me-2 text-primary"></i>Accuracy Trend</div>
+              <div class="card-body"><canvas id="progAccChart" height="140"></canvas></div>
+            </div>
+          </div>
+          <div class="col-lg-6">
+            <div class="card-soft">
+              <div class="card-header"><i class="bi bi-bar-chart me-2 text-primary"></i>Score Trend</div>
+              <div class="card-body"><canvas id="progScoreChart" height="140"></canvas></div>
+            </div>
+          </div>
+        </div>
+
+        <script>
+        (function(){
+          var progress = <%- JSON.stringify(progress||[]) %>;
+          var labels = progress.map(function(p,i){ return 'T'+(i+1); });
+          var accData = progress.map(function(p){ return (p.metrics_json && p.metrics_json.accuracy) || 0; });
+          var scoreData = progress.map(function(p){ return (p.metrics_json && p.metrics_json.predicted_score) || 0; });
+
+          new Chart(document.getElementById('progAccChart'), {
+            type: 'line',
+            data: { labels: labels, datasets: [{
+              label: 'Accuracy %', data: accData,
+              borderColor: '#05CD99', backgroundColor: 'rgba(5,205,153,0.15)',
+              tension: 0.35, fill: true, pointRadius: 4, pointBackgroundColor: '#05CD99'
+            }]},
+            options: { responsive: true, plugins: { legend: { display: false } },
+              scales: { y: { beginAtZero: true, max: 100, ticks: { callback: function(v){return v+'%'} } } } }
+          });
+
+          new Chart(document.getElementById('progScoreChart'), {
+            type: 'bar',
+            data: { labels: labels, datasets: [{
+              label: 'Predicted Score', data: scoreData,
+              backgroundColor: '#6366F1', borderRadius: 6
+            }]},
+            options: { responsive: true, plugins: { legend: { display: false } } }
+          });
+        })();
+        </script>
+
+      <% } else { %>
+        <div class="alert-soft">Unknown page.</div>
+      <% } %>
+
+    </main>
+  </div>
+</body>
+</html>
